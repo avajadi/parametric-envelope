@@ -7,26 +7,26 @@
 
 #include <cstdint>
 
-namespace QDE {
+namespace qde {
+    enum scaler {
+        scale_1 = 1,
+        scale_8 = 8,
+        scale_64 = 64,
+        scale_256 = 256,
+        scale_1024 = 1024
+    };
     class Timer {
-        // compare match register = [ 16,000,000Hz/ (prescaler * desired interrupt frequency) ] - 1
     private:
-        uint16_t prescaler;
+        scaler prescaler;
         int8_t compare_match;
     public:
-        static const uint16_t PRESCALE_1 = 1;
-        static const uint16_t PRESCALE_8 = 8;
-        static const uint16_t PRESCALE_64 = 64;
-        static const uint16_t PRESCALE_256 = 256;
-        static const uint16_t PRESCALE_1024 = 1024;
-
-        Timer(uint16_t frequency, uint16_t prescaler = PRESCALE_1024);
+        Timer(uint16_t frequency, scaler prescaler = scaler::scale_1024);
 
         void start();
 
         void stop();
 
-        uint16_t getPrescaler();
+        scaler getPrescaler();
 
         int8_t getCompareMatch();
     };

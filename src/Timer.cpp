@@ -6,14 +6,17 @@
 #include <iostream>
 
 using namespace std;
-namespace QDE {
-    Timer::Timer(uint16_t frequency, uint16_t prescaler) {
+namespace qde {
+    Timer::Timer(uint16_t frequency, scaler prescaler) {
         // Minimum frequency is 61Hz wit ha 1024 prescaler
-        this->prescaler = prescaler; //FIXME Make sure this is a valid value
+        this->prescaler = prescaler;
         compare_match = (16000000 / (prescaler * frequency)) - 1;//FIXME Range check
+        if( ((16000000 / (prescaler * frequency)) - 1) > 255 ) {
+            cerr << "compare_match overflow";
+        }
     }
 
-    uint16_t Timer::getPrescaler() {
+    scaler Timer::getPrescaler() {
         return prescaler;
     }
 
@@ -21,10 +24,12 @@ namespace QDE {
         return compare_match;
     }
 }
-using namespace QDE;
+using namespace qde;
 
 int main() {
     Timer t(2000);
     cout << "Timer with frequency 2000 has prescaler " << t.getPrescaler() << " and compare_match value "
          << (int)t.getCompareMatch() << endl << endl;
+    Timer t2(10000, scale_256);
+    cout << "Timer with frequency 10000 and prescaler " << t2.getPrescaler() << " get a compare value " << (int)t2.getCompareMatch() << endl;
 }
