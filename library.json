@@ -1,0 +1,23 @@
+{
+  "name": "ParametricEnvelope",
+  "version": "0.0.1",
+  "description": "A library to implement a parametric envelope generator",
+  "keywords": "planet, happiness, people",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/avajadi/parametric-envelope.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Eddie Olsson",
+      "email": "eddie.olsson@gmail.com",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://www.helloworld.org/",
+  "frameworks": "*",
+  "platforms": "*"
+}
