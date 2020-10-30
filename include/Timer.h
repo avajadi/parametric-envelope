@@ -29,6 +29,8 @@ namespace qde {
         scaler getPrescaler();
 
         int8_t getCompareMatch();
+
+        void attach(void (*interruptFunction)(void));
     };
 }
 

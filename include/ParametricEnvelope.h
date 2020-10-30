@@ -11,49 +11,49 @@ enum state_enum {
 };
 
 struct parameter_struct {
-        double value;
-        state_enum state;
-        uint8_t previousState;
         uint16_t attackTime;
-        int8_t attackSlope;
+        double attackSlope;
         uint16_t decayTime;
-        int8_t decaySlope;
-        double level;
+        double decaySlope;
+        double sustainLevel;
         uint16_t releaseTime;
-        int8_t releaseSlope;
+        double releaseSlope;
 };
 
 
 class ParametricEnvelope {
 private:
-/*    const uint8_t STATE_IDLE = 0;
-    const uint8_t STATE_ATTACK = 1;
-    const uint8_t STATE_DECAY = 2;
-    const uint8_t STATE_SUSTAIN = 3;
-    const uint8_t STATE_RELEASE = 4;
-*/
-    const uint8_t LEVEL_MAX = 10.0;
+    double currentValue;
+    uint16_t currentStep;
+    state_enum currentState;
+    state_enum previousState;
+
+    const double LEVEL_MAX = 10.0;
     parameter_struct parameters;
+    void gotoState(state_enum newState);
+    double calculateAttackValue(uint16_t currentStep,double time, double slope);
+    double calculateDecayValue(uint16_t currentStep,double time, double slope, double targetLevel);
+    double calculateReleaseValue(uint16_t currentStep,double time, double slope, double originLevel);
 
 public:
     ParametricEnvelope();
 
     //
-    // Setters for all envelope parameters
+    // Setters for all envelope parameters, with reasonable defaults
     //
-    void setAttackTime(uint16_t time);
+    void setAttackTime(uint16_t time=10);
 
-    void setAttackSlope(int8_t slope);
+    void setAttackSlope(int8_t slope=1);
 
-    void setDecayTime(uint16_t time);
+    void setDecayTime(uint16_t time=10);
 
-    void setDecaySlope(int8_t slope);
+    void setDecaySlope(int8_t slope=1);
 
-    void setSustainLevel(double level);
+    void setSustainLevel(double level=5.0);
 
-    void setReleaseTime(uint16_t time);
+    void setReleaseTime(uint16_t time=10);
 
-    void setReleaseSlope(int8_t slope);
+    void setReleaseSlope(int8_t slope=1);
 
     //
     // Even handlers for gate transitions
