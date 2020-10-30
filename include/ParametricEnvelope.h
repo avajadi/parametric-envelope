@@ -6,18 +6,19 @@
 #define PARAMETRIC_ENVELOPE_PARAMETRICENVELOPE_H
 
 #include <cstdint>
+
 enum state_enum {
-    idle,attack,decay,sustain,release
+    idle, attack, decay, sustain, release
 };
 
 struct parameter_struct {
-        uint16_t attackTime;
-        double attackSlope;
-        uint16_t decayTime;
-        double decaySlope;
-        double sustainLevel;
-        uint16_t releaseTime;
-        double releaseSlope;
+    double attackTime = 10.0;
+    double attackSlope = 0.0;
+    double decayTime = 10.0;
+    double decaySlope = 0.0;
+    double sustainLevel = 0.5;
+    double releaseTime = 10.0;
+    double releaseSlope = 0.0;
 };
 
 
@@ -28,32 +29,39 @@ private:
     state_enum currentState;
     state_enum previousState;
 
-    const double LEVEL_MAX = 10.0;
+    // Amplitude scale
+    double maxLevel;
+    // Time scale. Essentially, how often is step() called?
+    double stepFrequency;
     parameter_struct parameters;
+
     void gotoState(state_enum newState);
-    double calculateAttackValue(uint16_t currentStep,double time, double slope);
-    double calculateDecayValue(uint16_t currentStep,double time, double slope, double targetLevel);
-    double calculateReleaseValue(uint16_t currentStep,double time, double slope, double originLevel);
+
+    double calculateAttackValue(uint16_t currentStep, double time, double slope);
+
+    double calculateDecayValue(uint16_t currentStep, double time, double slope, double targetLevel);
+
+    double calculateReleaseValue(uint16_t currentStep, double time, double slope, double originLevel);
 
 public:
-    ParametricEnvelope();
+    ParametricEnvelope(double maxLevel = 10.0, double stepFrequency = 10000.0);
 
     //
     // Setters for all envelope parameters, with reasonable defaults
     //
-    void setAttackTime(uint16_t time=10);
+    void setAttackTime(double time);
 
-    void setAttackSlope(int8_t slope=1);
+    void setAttackSlope(double slope);
 
-    void setDecayTime(uint16_t time=10);
+    void setDecayTime(double time);
 
-    void setDecaySlope(int8_t slope=1);
+    void setDecaySlope(double slope);
 
-    void setSustainLevel(double level=5.0);
+    void setSustainLevel(double level);
 
-    void setReleaseTime(uint16_t time=10);
+    void setReleaseTime(double time);
 
-    void setReleaseSlope(int8_t slope=1);
+    void setReleaseSlope(double slope);
 
     //
     // Even handlers for gate transitions
@@ -75,6 +83,11 @@ public:
     // Reset the envelope
     //
     void reset();
+
+    //
+    // Get the current state.
+    //
+    state_enum getState();
 
     //
     // Return current parameters

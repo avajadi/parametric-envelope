@@ -33,3 +33,6 @@
 
 # Jetbrains stuff
 .idea/
+
+# Image files
+*.png
