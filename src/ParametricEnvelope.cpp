@@ -3,10 +3,9 @@
 //
 #include "../include/ParametricEnvelope.h"
 #include <iostream>
-#include <string>
 #include <cmath>
 
-ParametricEnvelope::ParametricEnvelope(double maxLevel, double stepFrequency) {
+ParametricEnvelope::ParametricEnvelope(double maxLevel, unsigned int stepFrequency) {
     this->maxLevel = maxLevel;
     this->stepFrequency = stepFrequency;
     reset();
@@ -79,7 +78,7 @@ double ParametricEnvelope::step() {
             }
             break;
         case decay:
-            if (previousState == decay) {
+            if (previousState != decay) {
                 currentStep = 0;
                 previousState = decay;
             }
@@ -94,15 +93,17 @@ double ParametricEnvelope::step() {
         case sustain:
             if (previousState != sustain) {
                 previousState = sustain;
+                currentValue = parameters.sustainLevel;
             }
             break;
         case release:
             if (previousState != release) {
                 currentStep = 0;
                 previousState = release;
+                releaseInitialValue = currentValue;
             }
             currentValue = calculateReleaseValue(currentStep, parameters.releaseTime, parameters.releaseSlope,
-                                                 parameters.sustainLevel);
+                                                 releaseInitialValue);
             if (currentValue < 0.0) {
                 currentValue = 0.0;
                 gotoState(idle);
@@ -111,6 +112,10 @@ double ParametricEnvelope::step() {
             }
     }
     return currentValue * maxLevel;
+}
+
+double ParametricEnvelope::getCurrentTime() {
+    return currentStep / (double)stepFrequency;
 }
 
 void ParametricEnvelope::onGateOn() {
@@ -126,42 +131,14 @@ void ParametricEnvelope::gotoState(state_enum newState) {
     currentState = newState;
 }
 
-double ParametricEnvelope::calculateAttackValue(uint16_t currentStep, double time, double slope) {
-    double currentTime = currentStep / stepFrequency;
-    return std::pow(currentTime / time, std::pow(2.0, -slope));
+double ParametricEnvelope::calculateAttackValue(unsigned long currentStep, double time, double slope) {
+    return std::pow(getCurrentTime() / time, std::pow(2.0, -slope));
 }
 
-double ParametricEnvelope::calculateDecayValue(uint16_t currentStep, double time, double slope, double targetLevel) {
-    double currentTime = currentStep / stepFrequency;
-    return std::pow(currentTime / time, std::pow(2.0, -slope)) * (targetLevel - 1) + 1;
+double ParametricEnvelope::calculateDecayValue(unsigned long currentStep, double time, double slope, double targetLevel) {
+    return std::pow(getCurrentTime() / time, std::pow(2.0, -slope)) * (targetLevel - 1.0) + 1.0;
 }
 
-double ParametricEnvelope::calculateReleaseValue(uint16_t currentStep, double time, double slope, double originLevel) {
-    double currentTime = currentStep / stepFrequency;
-    return originLevel - ( originLevel * currentTime );//FIXME Implement proper algorithm for release value
-}
-
-using namespace std;
-
-int main() {
-    ParametricEnvelope p(10.0,50.0);
-    p.setAttackSlope(0.0);
-    p.setDecaySlope(1.0);
-    cout << "Value\tState\n";
-    p.onGateOn();
-    int sustainTimeSteps = 100;
-    while( true ){
-        double value = p.step();
-        state_enum state = p.getState();
-        cout <<  value << "\t" << state << endl;
-        if(state == state_enum::sustain) {
-            sustainTimeSteps--;
-            if(sustainTimeSteps==0){
-                p.onGateOff();
-            }
-        }
-        if(state == state_enum::idle) {
-            return 0;
-        }
-    }
+double ParametricEnvelope::calculateReleaseValue(unsigned long currentStep, double time, double slope, double originLevel) {
+    return originLevel * ( 1- std::pow(getCurrentTime() / time, std::pow(2.0, -slope))) ;
 }

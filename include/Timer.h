@@ -5,22 +5,65 @@
 #ifndef PARAMETRIC_ENVELOPE_TIMER_H
 #define PARAMETRIC_ENVELOPE_TIMER_H
 
-#include <cstdint>
-
 namespace qde {
-    enum scaler {
-        scale_1 = 1,
-        scale_8 = 8,
-        scale_64 = 64,
-        scale_256 = 256,
-        scale_1024 = 1024
+    struct scaler {
+        unsigned int dividend;
+        unsigned int cs20: 1;
+        unsigned int cs21: 1;
+        unsigned int cs22: 1;
     };
+    const scaler
+    scalers[] = {
+            {
+                    .dividend = 1,
+                    .cs20 = 1,
+                    .cs21 = 0,
+                    .cs22 = 0
+            },
+            {
+                    .dividend = 8,
+                    .cs20 = 0,
+                    .cs21 = 1,
+                    .cs22 = 0
+            },
+            {
+                    .dividend=32,
+                    .cs20=1,
+                    .cs21=1,
+                    .cs22=0
+            },
+            {
+                    .dividend=64,
+                    .cs20 = 0,
+                    .cs21=0,
+                    .cs22=1
+            },
+            {
+                    .dividend=128,
+                    .cs20=1,
+                    .cs21=0,
+                    .cs22=1
+            },
+            {
+                    .dividend= 256,
+                    .cs20=0,
+                    .cs21=1,
+                    .cs22=1
+            },
+            {
+                    .dividend=1024,
+                    .cs20=1,
+                    .cs21=1,
+                    .cs22=1
+            }
+    };
+
     class Timer {
     private:
         scaler prescaler;
-        int8_t compare_match;
+        unsigned int compare_match;
     public:
-        Timer(uint16_t frequency, scaler prescaler = scaler::scale_1024);
+        Timer(unsigned int frequency);
 
         void start();
 
@@ -28,9 +71,11 @@ namespace qde {
 
         scaler getPrescaler();
 
-        int8_t getCompareMatch();
+        unsigned int getCompareMatch();
 
         void attach(void (*interruptFunction)(void));
+
+        void detach();
     };
 }
 

@@ -5,19 +5,17 @@
 #ifndef PARAMETRIC_ENVELOPE_PARAMETRICENVELOPE_H
 #define PARAMETRIC_ENVELOPE_PARAMETRICENVELOPE_H
 
-#include <cstdint>
-
 enum state_enum {
     idle, attack, decay, sustain, release
 };
 
 struct parameter_struct {
-    double attackTime = 10.0;
+    double attackTime = 1.0;
     double attackSlope = 0.0;
-    double decayTime = 10.0;
+    double decayTime = 1.0;
     double decaySlope = 0.0;
     double sustainLevel = 0.5;
-    double releaseTime = 10.0;
+    double releaseTime = 1.0;
     double releaseSlope = 0.0;
 };
 
@@ -25,26 +23,27 @@ struct parameter_struct {
 class ParametricEnvelope {
 private:
     double currentValue;
-    uint16_t currentStep;
+    double releaseInitialValue;
+    unsigned long currentStep;
     state_enum currentState;
     state_enum previousState;
 
     // Amplitude scale
     double maxLevel;
     // Time scale. Essentially, how often is step() called?
-    double stepFrequency;
+    unsigned int stepFrequency;
     parameter_struct parameters;
 
     void gotoState(state_enum newState);
 
-    double calculateAttackValue(uint16_t currentStep, double time, double slope);
+    double calculateAttackValue(unsigned long currentStep, double time, double slope);
 
-    double calculateDecayValue(uint16_t currentStep, double time, double slope, double targetLevel);
+    double calculateDecayValue(unsigned long currentStep, double time, double slope, double targetLevel);
 
-    double calculateReleaseValue(uint16_t currentStep, double time, double slope, double originLevel);
+    double calculateReleaseValue(unsigned long currentStep, double time, double slope, double originLevel);
 
 public:
-    ParametricEnvelope(double maxLevel = 10.0, double stepFrequency = 10000.0);
+    ParametricEnvelope(double maxLevel = 10.0, unsigned int stepFrequency = 10000);
 
     //
     // Setters for all envelope parameters, with reasonable defaults
@@ -62,6 +61,11 @@ public:
     void setReleaseTime(double time);
 
     void setReleaseSlope(double slope);
+
+    //
+    // Get current time _within the current phase_
+    // NB This gets reset at the beginning of the A, D and R phases and isn't updated during S
+    double getCurrentTime();
 
     //
     // Even handlers for gate transitions

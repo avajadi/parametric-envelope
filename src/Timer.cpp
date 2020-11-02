@@ -3,18 +3,20 @@
 //
 
 #include "../include/Timer.h"
-#include <iostream>
-#include <avr/io.h>
-#include <avr/interrupt.h>
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
 
 using namespace std;
 namespace qde {
-    Timer::Timer(uint16_t frequency, scaler prescaler) {
-        // Minimum frequency is 61Hz with a 1024 prescaler
-        this->prescaler = prescaler;
-        compare_match = (16000000 / (prescaler * frequency)) - 1;//FIXME Range check
-        if (((16000000 / (prescaler * frequency)) - 1) > 255) {
-            cerr << "compare_match overflow"; // FIXME A REAL range check, with errors.
+    Timer::Timer(unsigned int frequency) {
+        // Find the smallest dividend scaler that gives us a valid compare_match (<256)
+        for( scaler s : scalers ) {
+            unsigned long compare_match_candidate = (16000000 / (s.dividend * frequency)) - 1;
+            if( compare_match_candidate < 256 ){
+                prescaler = s;
+                compare_match = compare_match_candidate;
+                break;
+            }
         }
     }
 
@@ -22,7 +24,7 @@ namespace qde {
         return prescaler;
     }
 
-    int8_t Timer::getCompareMatch() {
+    unsigned int Timer::getCompareMatch() {
         return compare_match;
     }
 
@@ -38,7 +40,7 @@ namespace qde {
         // WGM2 bits 1 and 0 are in TCCR2A,
         // WGM2 bit 2 is in TCCR2B
         //
-        TCCR2A = (1 << WGM21);
+//        TCCR2A = (1 << WGM21);
 
         // Set Timer 2  No prescaling
         //
@@ -55,26 +57,22 @@ namespace qde {
         //    1        1       0    Factor 256
         //    1        1       1    Factor 1024
 
-        TCCR2B = (1 << CS21);
+
+//        TCCR2B = (1 << CS21);
 
         // Enable Compare-match register A interrupt for timer2
-        TIMSK2 = (1 << OCIE2A);
+//        TIMSK2 = (1 << OCIE2A);
 
         // This value determines the interrupt interval
-        OCR2A = compare_match;
+//        OCR2A = compare_match;
     }
 
     void Timer::attach(void (*interruptFunction)(void)) {
         // TODO Implement attach
     }
+
+    void Timer::detach() {
+        //TODO Implement detach
+    }
 }
 using namespace qde;
-
-int main() {
-    Timer t(2000);
-    cout << "Timer with frequency 2000 has prescaler " << t.getPrescaler() << " and compare_match value "
-         << (int) t.getCompareMatch() << endl << endl;
-    Timer t2(10000, scale_256);
-    cout << "Timer with frequency 10000 and prescaler " << t2.getPrescaler() << " get a compare value "
-         << (int) t2.getCompareMatch() << endl;
-}

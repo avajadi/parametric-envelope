@@ -36,3 +36,6 @@
 
 # Image files
 *.png
+
+# Build tree
+cmake-build-debug/
