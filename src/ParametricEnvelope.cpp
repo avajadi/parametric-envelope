@@ -2,8 +2,7 @@
 // Created by eddie on 2020-10-29.
 //
 #include "../include/ParametricEnvelope.h"
-#include <iostream>
-#include <cmath>
+#include <math.h>
 
 ParametricEnvelope::ParametricEnvelope(double maxLevel, unsigned int stepFrequency) {
     this->maxLevel = maxLevel;
